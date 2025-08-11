@@ -23,7 +23,6 @@ from vllm.model_executor.layers.rotary_embedding import (
     DeepseekScalingRotaryEmbedding, RotaryEmbedding)
 
 from vllm_ascend.ascend_config import get_ascend_config
-from vllm_ascend.platform import NPUPlatform
 from vllm_ascend.utils import enable_custom_op, is_310p
 
 
@@ -129,8 +128,6 @@ class AscendDeepseekScalingRotaryEmbedding(DeepseekScalingRotaryEmbedding):
         self.attn_factor = attn_factor
         self.beta_fast = beta_fast
         self.beta_slow = beta_slow
-        self.cos_cached = None
-        self.sin_cached = None
         # Get n-d magnitude scaling corrected for interpolation.
         self.mscale = float(
             self._yarn_get_mscale(self.scaling_factor, float(mscale)) /
@@ -140,9 +137,6 @@ class AscendDeepseekScalingRotaryEmbedding(DeepseekScalingRotaryEmbedding):
               self).__init__(head_size, rotary_dim, max_position_embeddings,
                              base, is_neox_style, dtype)
         self.max_seq_len = max_position_embeddings
-        self._set_cos_sin_cache(max_position_embeddings,
-                                dtype=dtype,
-                                device=NPUPlatform.device_type)
 
     def _yarn_get_mscale(self, scale: float = 1, mscale: float = 1) -> float:
         if scale <= 1:
