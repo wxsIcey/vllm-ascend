@@ -225,7 +225,7 @@ class AscendDeepseekScalingRotaryEmbedding(DeepseekScalingRotaryEmbedding):
         print("Ascend register buffer cos_cached, sin_cached")
         self.register_buffer("sin_cached", sin_cached, persistent=False)
 
-    def forward(self,
+    def forward_oot(self,
                 positions: torch.Tensor,
                 query: torch.Tensor,
                 key: torch.Tensor,
