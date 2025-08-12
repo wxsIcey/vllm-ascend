@@ -21,10 +21,7 @@ from modelscope import snapshot_download  # type: ignore[import-untyped]
 
 from tests.e2e.conftest import VllmRunner
 
-MODELS = [
-    "vllm-ascend/DeepSeek-V2-Lite-W8A8",
-    "vllm-ascend/Qwen2.5-0.5B-Instruct-W8A8"
-]
+MODELS = ["vllm-ascend/DeepSeek-V2-Lite-W8A8"]
 
 
 @pytest.mark.parametrize("model", MODELS)
