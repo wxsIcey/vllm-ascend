@@ -23,6 +23,7 @@ from vllm.model_executor.layers.rotary_embedding import (
     DeepseekScalingRotaryEmbedding, RotaryEmbedding)
 
 from vllm_ascend.ascend_config import get_ascend_config
+from vllm_ascend.platform import NPUPlatform
 from vllm_ascend.utils import enable_custom_op, is_310p
 
 
@@ -137,6 +138,9 @@ class AscendDeepseekScalingRotaryEmbedding(DeepseekScalingRotaryEmbedding):
               self).__init__(head_size, rotary_dim, max_position_embeddings,
                              base, is_neox_style, dtype)
         self.max_seq_len = max_position_embeddings
+        self._set_cos_sin_cache(seq_len=max_position_embeddings,
+                                device=NPUPlatform.device_type,
+                                dtype=dtype)
 
     def _yarn_get_mscale(self, scale: float = 1, mscale: float = 1) -> float:
         if scale <= 1:
@@ -210,8 +214,8 @@ class AscendDeepseekScalingRotaryEmbedding(DeepseekScalingRotaryEmbedding):
         freqs = torch.outer(t, inv_freq)
         cos_cached = torch.cat([freqs, freqs], dim=-1).cos() * self.mscale
         sin_cached = torch.cat([freqs, freqs], dim=-1).sin() * self.mscale
-        self.cos_cached = cos_cached.to(dtype)
-        self.sin_cached = sin_cached.to(dtype)
+        cos_cached = cos_cached.to(dtype)
+        sin_cached = sin_cached.to(dtype)
         cache = torch.cat(
             [freqs.cos() * self.mscale,
              freqs.sin() * self.mscale], dim=-1).to(dtype)
