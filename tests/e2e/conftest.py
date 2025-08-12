@@ -45,9 +45,12 @@ from tests.e2e.model_utils import (PROMPT_TEMPLATES, TokensTextLogprobs,
 # we not explicitly patch here, some of them might be effectiveless
 # in pytest scenario
 from vllm_ascend.utils import adapt_patch  # noqa E402
+from vllm_ascend.utils import register_ascend_customop
 
 adapt_patch(True)
 adapt_patch(False)
+
+register_ascend_customop()
 
 from vllm.distributed.parallel_state import (  # noqa E402
     destroy_distributed_environment, destroy_model_parallel)
