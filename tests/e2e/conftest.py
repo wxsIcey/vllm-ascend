@@ -49,7 +49,6 @@ from vllm_ascend.utils import adapt_patch  # noqa E402
 adapt_patch(True)
 adapt_patch(False)
 
-
 from vllm.distributed.parallel_state import (  # noqa E402
     destroy_distributed_environment, destroy_model_parallel)
 
