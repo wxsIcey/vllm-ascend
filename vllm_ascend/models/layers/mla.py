@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 import torch
-from torch import nn
 from vllm.attention import Attention, AttentionMetadata
 from vllm.config import CacheConfig
 from vllm.forward_context import get_forward_context
@@ -23,6 +22,7 @@ class AscendMLAModules:
     kv_b_proj: torch.nn.Module
     o_proj: torch.nn.Module
     rotary_emb: torch.nn.Module
+    fused_qkv_a_proj: Optional[torch.nn.Module]
 
 
 class AscendMultiHeadLatentAttention(MultiHeadLatentAttention):
@@ -44,7 +44,6 @@ class AscendMultiHeadLatentAttention(MultiHeadLatentAttention):
         cache_config: Optional[CacheConfig] = None,
         quant_config: Optional[QuantizationConfig] = None,
         prefix: str = "",
-        
     ) -> None:
         super().__init__(
             hidden_size,
@@ -80,11 +79,11 @@ class AscendMultiHeadLatentAttention(MultiHeadLatentAttention):
             qk_rope_head_dim=self.qk_rope_head_dim,
             qk_head_dim=self.qk_head_dim,
             v_head_dim=self.v_head_dim,
-            
             rotary_emb=mla_modules.rotary_emb,
             q_a_proj=mla_modules.q_a_proj,
             q_a_layernorm=mla_modules.q_a_layernorm,
-            q_proj=mla_modules.q_proj if self.q_lora_rank is None else mla_modules.q_b_proj,
+            q_proj=mla_modules.q_proj
+            if self.q_lora_rank is None else mla_modules.q_b_proj,
             kv_a_proj_with_mqa=mla_modules.kv_a_proj_with_mqa,
             kv_a_layernorm=mla_modules.kv_a_layernorm,
             kv_b_proj=mla_modules.kv_b_proj,
@@ -92,17 +91,17 @@ class AscendMultiHeadLatentAttention(MultiHeadLatentAttention):
         )
 
     def forward_oot(
-            self,
-            positions: torch.Tensor,
-            hidden_states: torch.Tensor,
-            enable_shared_expert_dp: bool,
-            debug_layer_idx: int,
-            first_k_dense_replace: int,
-            tp_size: int,
-            layers: int,
-            kv_cache: Optional[torch.Tensor] = None,
-            attn_metadata: Optional[AttentionMetadata] = None,
-            ) -> torch.Tensor:
+        self,
+        positions: torch.Tensor,
+        hidden_states: torch.Tensor,
+        enable_shared_expert_dp: bool,
+        debug_layer_idx: int,
+        first_k_dense_replace: int,
+        tp_size: int,
+        layers: int,
+        kv_cache: Optional[torch.Tensor] = None,
+        attn_metadata: Optional[AttentionMetadata] = None,
+    ) -> torch.Tensor:
         forward_context = get_forward_context()
         if kv_cache is None:
             kv_cache = self.mla_attn.kv_cache[forward_context.virtual_engine]

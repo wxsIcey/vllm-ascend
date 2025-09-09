@@ -542,6 +542,7 @@ class CustomDeepseekV2MLAAttention(DeepseekV2MLAAttention):
             kv_b_proj=self.kv_b_proj,
             o_proj=self.o_proj,
             rotary_emb=self.rotary_emb,
+            fused_qkv_a_proj=None,
         )
 
         self.mla_attn = MultiHeadLatentAttention(
