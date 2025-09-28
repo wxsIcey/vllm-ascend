@@ -47,7 +47,6 @@ from vllm.model_executor.model_loader.weight_utils import (
 from vllm.model_executor.models.interfaces import (HasInnerState, IsHybrid,
                                                    MixtureOfExperts,
                                                    SupportsLoRA, SupportsPP)
-from vllm.model_executor.models.mamba_cache import MambaCacheParams
 from vllm.model_executor.models.qwen2_moe import Qwen2MoeMLP as Qwen3NextMLP
 from vllm.model_executor.models.qwen3_next import (Qwen3NextAttention,
                                                    Qwen3NextSparseMoeBlock,
@@ -80,14 +79,8 @@ class Qwen3NextGatedDeltaNet(nn.Module, MambaBase):
 
     def get_state_shape(self) -> tuple[tuple[int, ...], tuple[int, ...]]:
         return MambaStateShapeCalculator.gated_delta_net_state_shape(
-            self.tp_size,
-            self.num_k_heads,
-            self.num_v_heads,
-            self.head_k_dim,
-            self.head_v_dim,
-            self.conv_kernel_size,
-            self.num_spec,
-            use_v1=True)
+            self.tp_size, self.num_k_heads, self.num_v_heads, self.head_k_dim,
+            self.head_v_dim, self.conv_kernel_size, self.num_spec)
 
     def __init__(
         self,
@@ -262,12 +255,7 @@ class Qwen3NextGatedDeltaNet(nn.Module, MambaBase):
         value = rearrange(value, 'l (h d) -> 1 l h d', d=self.head_v_dim)
         return query, key, value
 
-    def forward(
-        self,
-        hidden_states: torch.Tensor,
-        output: torch.Tensor,
-        cache_params: Optional[MambaCacheParams] = None,
-    ):
+    def forward(self, hidden_states: torch.Tensor, output: torch.Tensor):
         return torch.ops.vllm.npu_gdn_attention(
             hidden_states,
             output,
@@ -974,14 +962,10 @@ class Qwen3NextForCausalLM(nn.Module, HasInnerState, SupportsLoRA, SupportsPP,
         num_spec = (vllm_config.speculative_config.num_speculative_tokens
                     if vllm_config.speculative_config else 0)
         return MambaStateShapeCalculator.gated_delta_net_state_shape(
-            tp_size,
-            hf_config.linear_num_key_heads,
-            hf_config.linear_num_value_heads,
-            hf_config.linear_key_head_dim,
-            hf_config.linear_value_head_dim,
-            hf_config.linear_conv_kernel_dim,
-            num_spec,
-            use_v1=True)
+            tp_size, hf_config.linear_num_key_heads,
+            hf_config.linear_num_value_heads, hf_config.linear_key_head_dim,
+            hf_config.linear_value_head_dim, hf_config.linear_conv_kernel_dim,
+            num_spec)
 
     def compute_logits(
             self,
