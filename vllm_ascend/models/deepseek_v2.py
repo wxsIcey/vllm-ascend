@@ -61,7 +61,6 @@ from vllm.model_executor.models.utils import (
     PPMissingLayer, is_pp_missing_parameter,
     make_empty_intermediate_tensors_factory, make_layers, maybe_prefix)
 from vllm.model_executor.utils import set_weight_attrs
-from vllm.platforms import current_platform
 
 from vllm_ascend.ascend_config import get_ascend_config
 from vllm_ascend.models.layers.mla import AscendMLAModules
@@ -87,16 +86,7 @@ class AscendDeepseekV2Model(DeepseekV2Model, nn.Module):
         self.config = config
 
         self.vocab_size = config.vocab_size
-        self.is_v32 = hasattr(config, "index_topk")
-        if self.is_v32:
-            topk_tokens = config.index_topk
-            topk_indices_buffer = torch.empty(
-                vllm_config.scheduler_config.max_num_batched_tokens,
-                topk_tokens,
-                dtype=torch.int32,
-                device=current_platform.device_type)
-        else:
-            topk_indices_buffer = None
+        topk_indices_buffer = None
 
         if get_pp_group().is_first_rank:
             self.embed_tokens = VocabParallelEmbedding(
