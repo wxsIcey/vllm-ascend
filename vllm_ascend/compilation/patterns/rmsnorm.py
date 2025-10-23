@@ -8,23 +8,25 @@ class RMSNormQuantPattern:
             """
             Generate example inputs for the AddRMSNormQuant fusion pattern.
             """
-            rms_norm_input = torch.randn(2, 4, device="meta")
-            residual = torch.randn(2, 4, device="meta")
-            rms_norm_weight = torch.randn(4, device="meta")
-            scale = torch.tensor([1.0], device="meta")
-            offset = torch.tensor([0.0], device="meta")
+            rms_norm_input = torch.randn(2, 4, device="npu")
+            residual = torch.randn(2, 4, device="npu")
+            rms_norm_weight = torch.randn(4, device="npu")
+            scale = torch.tensor([1.0], device="npu")
+            offset = torch.tensor([0.0], device="npu")
             return [rms_norm_input, residual, rms_norm_weight, scale, offset]
 
         def pattern(rms_norm_input, residual, rms_norm_weight, scale, offset):
             """
             Pattern for AddRMSNormQuant fusion.
             """
+            print("Calling npu_add_rms_norm...")
             output = torch.ops.npu.npu_add_rms_norm(rms_norm_input, residual,
                                                     rms_norm_weight, 1e-6)
             out0 = output[0]
             out1 = output[2]
             quantized_output = torch.ops.npu.npu_quantize(
                 out0, scale, offset, torch.qint8, -1, False)
+            print("npu_quantize called successfully.")
             return quantized_output, out1
 
 
@@ -32,6 +34,7 @@ class RMSNormQuantPattern:
             """
           Replacement for the AddRMSNormQuant fusion.
           """
+            print("Calling npu_add_rms_norm_quant...")
             output = torch.ops.npu.npu_add_rms_norm_quant(
                 rms_norm_input,
                 residual,
@@ -40,6 +43,7 @@ class RMSNormQuantPattern:
                 scale,  # The inverse of scale is required by npu_add_rms_norm_quant kernel which is opposite to the npu_quantize kernel.
                 offset,
                 epsilon=1e-6)
+            print("npu_add_rms_norm_quant called successfully.")
             quantized_output = output[0]
             out1 = output[2]
             return quantized_output, out1

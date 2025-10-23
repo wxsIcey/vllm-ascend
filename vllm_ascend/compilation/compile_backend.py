@@ -20,39 +20,36 @@ class CompilerBackend(CompilerInterface):
     It is used to process the FX graph and perform custom operation fusing etc.
     """
     name = "AscendCompilerBackend"
-    
-    
-    def __call__(self, graph: fx.GraphModule, example_inputs) -> Callable:
-        """
-        Process the FX graph and perform custom operation fusing.
-
-        Args:
-            graph (fx.Graph): The FX graph to be processed.
-            example_inputs (optional): Example inputs for the graph.
-
-        Returns:
-            fx.Graph: The processed FX graph with custom operation fusing applied.
-        """
-        graph = self.compile(graph, example_inputs)
-        return graph
 
     def compile(
         self,
-        gm: fx.GraphModule,
+        graph: fx.GraphModule,
         example_inputs,
-        **kwargs,
+        compiler_config: dict[str, Any],
+        runtime_shape: Optional[int] = None,
+        key: Optional[str] = None,
     ) -> tuple[Callable, Optional[Any]]:
         def compile_inner(fx_graph, inputs):
             self.apply_pattern_match_passes(fx_graph)
             self.apply_decompose_auto_functionalized_pass(fx_graph)
+            for node in fx_graph.graph.nodes:
+                if node.op == "output":
+                    output_types = tuple(
+                        type(arg) for arg in node.args[0]
+                    ) if isinstance(node.args[0], (list, tuple)) else (type(node.args[0]),)
+                    if len(output_types) == 1 and output_types[0] is type(None):
+                        raise RuntimeError(
+                            "Graph output must be a (). This is so that we can avoid pytree processing of the outputs. "
+                            "Please change the module to have tuple outputs or use aot_module instead."
+                        )
+            
             return fx_graph
-
         # Use the default decomposition table to decompose operators.
         decompositions = select_decomp_table()
         # Use AOT Autograd to handle the forward compilation.
         return aot_autograd(fw_compiler=compile_inner, decompositions=decompositions)(
-            gm, example_inputs
-        )
+            graph, example_inputs
+        ), None
 
     def apply_pattern_match_passes(self, graph: fx.GraphModule):
         patterns.lazy_init()
@@ -74,20 +71,4 @@ class CompilerBackend(CompilerInterface):
         GraphTransformObserver(graph, "decompose_auto_functionalized").apply_graph_pass(
             decompose_auto_functionalized
         )
-        
-    def compute_hash(self, config: Any) -> str:
-        """
-        Compute a unique hash for the compiler backend based on its configuration.
-
-        Args:
-            config: The configuration object for the compiler.
-
-        Returns:
-            A string representing the unique hash of the compiler backend.
-        """
-        # 示例：根据配置生成哈希值
-        import hashlib
-        config_str = str(config)  # 将配置对象转换为字符串
-        return hashlib.md5(config_str.encode('utf-8')).hexdigest()
-
 
