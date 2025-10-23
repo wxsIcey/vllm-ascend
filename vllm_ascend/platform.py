@@ -115,6 +115,7 @@ class NPUPlatform(Platform):
 
     @classmethod
     def check_and_update_config(cls, vllm_config: VllmConfig) -> None:
+        from vllm_ascend.compilation.compile_backend import CompilerBackend
         if not envs_vllm.VLLM_USE_V1:
             raise ValueError("vLLM Ascend does not support V0 engine.")
         # initialize ascend config from vllm additional_config
@@ -240,6 +241,7 @@ class NPUPlatform(Platform):
             compilation_config.splitting_ops.extend([
                 "vllm.unified_ascend_attention_with_output", "vllm.mla_forward"
             ])
+            compilation_config.oot_compiler = CompilerBackend.__module__ + "." + CompilerBackend.__name__
             update_aclgraph_sizes(vllm_config)
         elif compilation_config.cudagraph_mode == CUDAGraphMode.FULL_DECODE_ONLY:
             logger.info(
