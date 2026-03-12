@@ -226,6 +226,16 @@ class NPUModelRunner(GPUModelRunner):
         with _torch_cuda_wrapper():
             super().__init__(vllm_config, device)
 
+        # patch for vllm#35552
+        # self.cudagraph_batch_sizes sorts in ascending order.
+        if (
+            self.compilation_config.cudagraph_capture_sizes
+            and self.compilation_config.cudagraph_mode != CUDAGraphMode.NONE
+        ):
+            self.cudagraph_batch_sizes = sorted(self.compilation_config.cudagraph_capture_sizes)
+        else:
+            self.cudagraph_batch_sizes = []
+
         # NOTE: For FULL mode we change +1 to +2 to reserve extra space for padding.
         # See _pad_query_start_loc_for_fia.
         self.query_start_loc = self._make_buffer(
@@ -1306,7 +1316,9 @@ class NPUModelRunner(GPUModelRunner):
                     max_tokens_across_pcp=0 if self.pcp_size == 1 else self.pcp_manager.max_num_tokens_across_pcp,
                     skip_compiled=has_encoder_input,
                 ),
-                self.maybe_get_kv_connector_output(scheduler_output) as kv_connector_output,
+                self.maybe_get_kv_connector_output(
+                    scheduler_output, defer_finalize=not clear_kv_metadata
+                ) as kv_connector_output,
             ):
                 hidden_states = self._model_forward(
                     num_tokens_padded, input_ids, positions, intermediate_tensors, inputs_embeds, **model_kwargs
@@ -1327,7 +1339,7 @@ class NPUModelRunner(GPUModelRunner):
                     skip_compiled=has_encoder_input,
                 ),
                 self.maybe_get_kv_connector_output(
-                    scheduler_output, clear_metadata=clear_kv_metadata
+                    scheduler_output, defer_finalize=not clear_kv_metadata
                 ) as kv_connector_output,
             ):
                 hidden_states = self._model_forward(
@@ -2413,6 +2425,7 @@ class NPUModelRunner(GPUModelRunner):
                 aclgraph_runtime_mode=cudagraph_runtime_mode,
                 batch_descriptor=batch_desc,
                 model_instance=self.model,
+                skip_compiled=is_profile,
             ):
                 outputs = self._model_forward(
                     num_tokens_padded, input_ids, positions, intermediate_tensors, inputs_embeds
@@ -2468,12 +2481,23 @@ class NPUModelRunner(GPUModelRunner):
         ) in {MoECommType.MC2, MoECommType.FUSED_MC2}:
             self._dummy_run(mc2_tokens_capacity, with_prefill=True, is_profile=True)
         origin_max_num_tokens = self.max_num_tokens
+        origin_compilation_mode = self.compilation_config.mode
+        origin_cudagraph_mode = self.compilation_config.cudagraph_mode
         # in the pcp scenario, the split sequence needs to be used for profile run
         # TODO: after the vllm pcp function is launched, this logic needs to be brought up to the community
         if self.pcp_size > 1:
             self.max_num_tokens = math.ceil(self.max_num_tokens / (self.pcp_size * 2)) * 2
-        super().profile_run()
-        self.max_num_tokens = origin_max_num_tokens
+        # NOTE: profiling is only used to estimate memory. On Ascend, entering
+        # the compile / graph path here can create FakeTensorMode mismatches
+        # before the real warmup stage.
+        self.compilation_config.mode = CompilationMode.NONE
+        self.compilation_config.cudagraph_mode = CUDAGraphMode.NONE
+        try:
+            super().profile_run()
+        finally:
+            self.compilation_config.mode = origin_compilation_mode
+            self.compilation_config.cudagraph_mode = origin_cudagraph_mode
+            self.max_num_tokens = origin_max_num_tokens
 
     def eplb_warmup(self):
         if self.dynamic_eplb and not self.is_eplb_warmuped:
@@ -2904,7 +2928,7 @@ class NPUModelRunner(GPUModelRunner):
                 # to kernel_block_sizes[0]
                 kernel_block_sizes.append([0])
         if block_sizes != [self.cache_config.block_size] or kernel_block_sizes != [[self.cache_config.block_size]]:
-            assert self.cache_config.cpu_offload_gb == 0, (
+            assert self.offload_config.uva.cpu_offload_gb == 0, (
                 "Cannot re-initialize the input batch when CPU weight "
                 "offloading is enabled. See https://github.com/vllm-project/vllm/pull/18298 "  # noqa: E501
                 "for more details."
