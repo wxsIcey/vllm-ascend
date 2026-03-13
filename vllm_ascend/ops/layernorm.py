@@ -18,6 +18,7 @@
 
 import torch
 from torch import nn
+from vllm import ir
 from vllm.config import get_current_vllm_config
 from vllm.model_executor.layers.layernorm import GemmaRMSNorm, RMSNorm, RMSNormGated
 
@@ -155,4 +156,4 @@ class AscendRMSNormGated(RMSNormGated):
 
     def forward_oot(self, x, z=None):
         """If z is not None, we do norm(x) * silu(z) if norm_before_gate, else norm(x * silu(z))"""
-        return LayerNormFn.apply(x, self.weight, self.bias, z, self.eps, self.group_size, self.norm_before_gate, True)
+        return ir.ops.rms_norm_gated(x, self.weight, self.bias, z, self.eps, self.group_size, self.norm_before_gate)
