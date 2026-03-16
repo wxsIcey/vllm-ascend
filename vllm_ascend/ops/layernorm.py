@@ -18,11 +18,12 @@
 
 import torch
 from torch import nn
+from vllm import ir
 from vllm.config import get_current_vllm_config
 from vllm.model_executor.layers.layernorm import GemmaRMSNorm, RMSNorm, RMSNormGated
 
 from vllm_ascend.ops.triton.layernorm_gated import layer_norm_fwd_npu
-from vllm_ascend.utils import enable_custom_op, get_weight_prefetch_method
+from vllm_ascend.utils import get_weight_prefetch_method
 
 
 class AscendRMSNorm(RMSNorm):
@@ -51,17 +52,12 @@ class AscendRMSNorm(RMSNorm):
         import torch_npu
 
         if residual is not None:
-            if enable_custom_op():
-                x, _, residual = torch.ops._C_ascend.npu_add_rms_norm_bias(
-                    x, residual, self.weight, self.bias, self.variance_epsilon
-                )
-            else:
-                x, _, residual = torch_npu.npu_add_rms_norm(x, residual, self.weight, self.variance_epsilon)
-                if self.bias is not None:
-                    x.add_(self.bias)
+            x, _, residual = torch_npu.npu_add_rms_norm(x, residual, self.weight, self.variance_epsilon)
+            if self.bias is not None:
+                x.add_(self.bias)
             return x, residual
 
-        x, residual = torch_npu.npu_rms_norm(x, self.weight, self.variance_epsilon)
+        x = ir.ops.rms_norm(x, self.weight, self.variance_epsilon)
         if self.bias is not None:
             x.add_(self.bias)
 
@@ -79,12 +75,7 @@ class AscendGemmaRMSNorm(GemmaRMSNorm):
         import torch_npu
 
         if residual is not None:
-            if enable_custom_op():
-                x, _, residual = torch.ops._C_ascend.npu_add_rms_norm_bias(
-                    x, residual, 1.0 + self.weight, None, self.variance_epsilon
-                )
-            else:
-                x, _, residual = torch_npu.npu_add_rms_norm(x, residual, 1.0 + self.weight, self.variance_epsilon)
+            x, _, residual = torch_npu.npu_add_rms_norm(x, residual, 1.0 + self.weight, self.variance_epsilon)
             return x, residual
 
         x, _ = torch.ops._C_ascend.npu_gemma_rms_norm(x, self.weight, self.variance_epsilon)
