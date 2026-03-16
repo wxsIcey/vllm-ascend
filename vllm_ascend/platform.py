@@ -479,7 +479,7 @@ class NPUPlatform(Platform):
     def get_default_ir_op_priority(cls, vllm_config: VllmConfig) -> IrOpPriorityConfig:
         from vllm.config.kernel import IrOpPriorityConfig
 
-        return IrOpPriorityConfig.with_default(["torch_npu", "native"])
+        return IrOpPriorityConfig.with_default(["npu_kernels", "native"])
 
     @classmethod
     def get_attn_backend_cls(cls, selected_backend, attn_selector_config, num_heads: int | None = None):

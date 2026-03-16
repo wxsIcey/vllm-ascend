@@ -59,7 +59,7 @@ class AscendRMSNorm(RMSNorm):
 
         x = ir.ops.rms_norm(x, self.weight, self.variance_epsilon)
         if self.bias is not None:
-            x = x + self.bias
+            x.add_(self.bias)
 
         weight_prefetch_method = get_weight_prefetch_method()
         weight_prefetch_method.maybe_prefetch_mlp_weight_postprocess(x)

@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from vllm_ascend.kernels import torch_npu  # noqa: F401
+from vllm_ascend.kernels import npu_ops  # noqa: F401

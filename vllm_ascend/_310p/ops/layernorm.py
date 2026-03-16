@@ -19,7 +19,7 @@ class AscendRMSNorm310(AscendRMSNorm):
 
         x = ir.ops.rms_norm(x, self.weight, self.variance_epsilon)
         if self.bias is not None:
-            x = x + self.bias
+            x.add_(self.bias)
         return x
 
 

@@ -22,7 +22,7 @@ rms_no_var_size = lambda x, weight, epsilon, variance_size=None: variance_size i
 """npu_rms_norm does not support variance_size parameter."""
 
 
-@ir.ops.rms_norm.register_impl("torch_npu", supports_args=rms_no_var_size)
+@ir.ops.rms_norm.register_impl("npu_kernels", supports_args=rms_no_var_size)
 def rms_norm(x: Tensor, weight: Tensor | None, epsilon: float, variance_size: int | None = None) -> Tensor:
     if weight is None:
         weight = torch.ones(x.shape[-1], device=x.device, dtype=x.dtype)
