@@ -7,11 +7,10 @@
 # mypy: ignore-errors
 
 import torch
+from torch.library import wrap_triton
 from vllm.triton_utils import tl, triton
 
 
-@triton.heuristics({"HAS_BIAS": lambda args: args["B"] is not None})
-@triton.heuristics({"HAS_Z": lambda args: args["Z"] is not None})
 @triton.jit
 def _layer_norm_fwd_1pass_kernel_npu(
     X,  # pointer to the input
@@ -145,7 +144,7 @@ def layer_norm_fwd_npu(
 
     # Now grid is (num blocks over M, num groups)
     grid = (triton.cdiv(M, BLOCK_M), ngroups)
-    _layer_norm_fwd_1pass_kernel_npu[grid](
+    wrap_triton(_layer_norm_fwd_1pass_kernel_npu)[grid](
         x,
         out,
         weight,
@@ -161,8 +160,9 @@ def layer_norm_fwd_npu(
         eps,
         BLOCK_M=BLOCK_M,
         BLOCK_N=BLOCK_N,
+        HAS_BIAS=bias is not None,
+        HAS_Z=z is not None,
         NORM_BEFORE_GATE=norm_before_gate,
         IS_RMS_NORM=is_rms_norm,
-        # Remove multibuffer if not needed
     )
     return out, mean, rstd
