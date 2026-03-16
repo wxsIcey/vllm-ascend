@@ -22,7 +22,6 @@ from vllm import ir
 from vllm.config import get_current_vllm_config
 from vllm.model_executor.layers.layernorm import GemmaRMSNorm, RMSNorm, RMSNormGated
 
-from vllm_ascend.ops.triton.layernorm_gated import layer_norm_fwd_npu
 from vllm_ascend.utils import enable_custom_op, get_weight_prefetch_method
 
 
@@ -90,43 +89,6 @@ class AscendGemmaRMSNorm(GemmaRMSNorm):
 
         x, _ = torch.ops._C_ascend.npu_gemma_rms_norm(x, self.weight, self.variance_epsilon)
         return x
-
-
-class LayerNormFn(torch.autograd.Function):
-    @staticmethod
-    def forward(ctx, x, weight, bias, z=None, eps=1e-6, group_size=None, norm_before_gate=True, is_rms_norm=False):
-        """If z is not None, we do norm(x) * silu(z) if norm_before_gate, else norm(x * silu(z))"""
-
-        x_shape_og = x.shape
-        # reshape input data into 2D tensor
-        x = x.reshape(-1, x.shape[-1])
-        if x.stride(-1) != 1:
-            x = x.contiguous()
-        if z is not None:
-            assert z.shape == x_shape_og
-            z = z.reshape(-1, z.shape[-1])
-            if z.stride(-1) != 1:
-                z = z.contiguous()
-        weight = weight.contiguous()
-        if bias is not None:
-            bias = bias.contiguous()
-        y, mean, rstd = layer_norm_fwd_npu(
-            x,
-            weight,
-            bias,
-            eps,
-            z=z,
-            group_size=group_size,
-            norm_before_gate=norm_before_gate,
-            is_rms_norm=is_rms_norm,
-        )
-        ctx.save_for_backward(x, weight, bias, mean, rstd, z)
-        ctx.x_shape_og = x_shape_og
-        ctx.eps = eps
-        ctx.group_size = group_size
-        ctx.norm_before_gate = norm_before_gate
-        ctx.is_rms_norm = is_rms_norm
-        return y.reshape(x_shape_og)
 
 
 class AscendRMSNormGated(RMSNormGated):
