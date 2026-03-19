@@ -15,6 +15,6 @@
 # This file is a part of the vllm-ascend project.
 #
 
-from . import _310p_ops, npu_ops, triton
+from . import rope
 
-__all__ = ["npu_ops", "_310p_ops", "triton"]
+__all__ = ["rope"]

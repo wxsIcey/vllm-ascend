@@ -17,6 +17,7 @@
 #
 import torch
 from torch._inductor.pattern_matcher import PatternMatcherPass, PatternPrettyPrinter
+from vllm import ir
 from vllm.compilation.passes.vllm_inductor_pass import VllmInductorPass
 from vllm.config import VllmConfig, get_layers_from_vllm_config
 from vllm.config.compilation import Range
@@ -66,9 +67,7 @@ class QKNormRopeFusionPattern(BasePattern):
 
             q_flat = q_norm_out.view(q.shape)
             k_flat = k_norm_out.view(k.shape)
-            q_rope, k_rope = torch.ops.vllm.npu_rotary_embedding(
-                positions, q_flat, k_flat, cos_sin_cache, self.head_dim, self.rope_dim, True
-            )
+            q_rope, k_rope = ir.ops.rotary_embedding(positions, q_flat, k_flat, self.head_dim, cos_sin_cache, True)
 
             return q_rope, k_rope, v
 
@@ -147,9 +146,7 @@ class QKNormRopeFusionPatternWithBias(BasePattern):
 
             q_flat = q_normed.view(q.shape)
             k_flat = k_normed.view(k.shape)
-            q_rope, k_rope = torch.ops.vllm.npu_rotary_embedding(
-                positions, q_flat, k_flat, cos_sin_cache, self.head_dim, self.rope_dim, True
-            )
+            q_rope, k_rope = ir.ops.rotary_embedding(positions, q_flat, k_flat, self.head_dim, cos_sin_cache, True)
 
             return q_rope, k_rope, v
 

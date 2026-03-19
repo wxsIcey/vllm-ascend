@@ -19,8 +19,6 @@ import torch_npu
 from torch import Tensor
 from vllm import ir
 
-from vllm_ascend.ops.rotary_embedding import get_cos_and_sin_slice
-
 
 @ir.ops.rotary_embedding.register_impl("310p_kernels")
 def rotary_embedding(
@@ -31,6 +29,10 @@ def rotary_embedding(
     cos_sin_cache: Tensor,
     is_neox_style: bool,
 ) -> tuple[Tensor, Tensor]:
+    # Deferred import to avoid triggering vllm_ascend.ops.__init__ during
+    # import_kernels(), which would cause a circular import with linear.py.
+    from vllm_ascend.ops.rotary_embedding import get_cos_and_sin_slice  # noqa: PLC0415
+
     query_shape, key_shape = query.shape, key.shape
     rotary_dim = cos_sin_cache.shape[-1]
     if cos_sin_cache.device != query.device:

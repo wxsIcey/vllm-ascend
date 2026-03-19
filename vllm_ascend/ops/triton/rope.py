@@ -15,6 +15,7 @@
 # This file is a part of the vllm-ascend project.
 #
 import torch
+from torch.library import wrap_triton
 from vllm.triton_utils import tl, triton
 
 from vllm_ascend.ops.triton.triton_utils import get_vectorcore_num
@@ -249,7 +250,7 @@ def rope_forward_triton(
 
     if cos_sin_cache is not None and positions is not None:
         assert positions.shape[0] == num_tokens
-        _triton_rope[(n_row,)](
+        wrap_triton(_triton_rope)[(n_row,)](
             q,
             q.stride(0),
             k,
@@ -281,7 +282,7 @@ def rope_forward_triton(
             # If rope_dim is not specified, we assume that input cos/sin is not
             # duplicated to rope_dim, which means rope_dim == cos.shape[-1] * 2
             rope_dim = cos.shape[-1] * 2
-        _triton_rope[(n_row,)](
+        wrap_triton(_triton_rope)[(n_row,)](
             q,
             q.stride(0),
             k,
