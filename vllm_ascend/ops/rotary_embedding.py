@@ -20,6 +20,7 @@ import os
 
 import torch
 import torch_npu
+from vllm import ir
 from vllm.config import get_current_vllm_config
 from vllm.forward_context import get_forward_context
 from vllm.model_executor.layers.rotary_embedding import (
@@ -37,7 +38,6 @@ from vllm_ascend.utils import AscendDeviceType, get_ascend_device_type, has_rope
 if HAS_TRITON:
     from vllm.model_executor.layers.rotary_embedding.mrope import triton_mrope
 
-    from vllm_ascend.ops.triton.rope import rope_forward_triton
 
 # Currently, rope ops used on npu requires detached cos && sin as inputs.
 # However, RotaryEmbedding in vllm use cos_sin_cache as a whole variable.
@@ -150,69 +150,6 @@ def get_cos_and_sin_slice():
     return _cos_slice, _sin_slice
 
 
-def rope_forward_oot(
-    positions: torch.Tensor,
-    query: torch.Tensor,
-    key: torch.Tensor,
-    cos_sin_cache: torch.Tensor,
-    head_size: int,
-    rotary_dim: int,
-    is_neox_style: bool,
-    offsets: torch.Tensor | None = None,
-) -> tuple[torch.Tensor, torch.Tensor]:
-    query_shape, key_shape = query.shape, key.shape
-    if offsets is not None:
-        raise NotImplementedError("Batched rotary embedding is currently not supported on NPU.")
-    if HAS_TRITON:
-        num_tokens = query.shape[0]
-        query, key = rope_forward_triton(
-            query.view(num_tokens, -1, head_size),
-            key.view(num_tokens, -1, head_size),
-            cos_sin_cache=cos_sin_cache,
-            positions=positions,
-            rope_dim=rotary_dim,
-            is_neox_style=is_neox_style,
-        )
-    else:
-        if rotary_dim < head_size:
-            num_tokens = query.shape[0]
-            query = query.view(num_tokens, -1, head_size)
-            key = key.view(num_tokens, -1, head_size)
-            q_rot = query[..., :rotary_dim]
-            q_pass = query[..., rotary_dim:]
-            k_rot = key[..., :rotary_dim]
-            k_pass = key[..., rotary_dim:]
-            q_rot = q_rot.contiguous().view(num_tokens, -1)
-            k_rot = k_rot.contiguous().view(num_tokens, -1)
-            # only the rotary part is processed here,
-            # the dimension should be rotary_dim
-            torch_npu._npu_rotary_embedding(
-                positions,
-                q_rot,
-                k_rot,
-                rotary_dim,
-                cos_sin_cache,
-                is_neox_style,
-            )
-            q_rot = q_rot.view(num_tokens, -1, rotary_dim)
-            k_rot = k_rot.view(num_tokens, -1, rotary_dim)
-            query = torch.cat((q_rot, q_pass), dim=-1).reshape(query_shape)
-            key = torch.cat((k_rot, k_pass), dim=-1).reshape(key_shape)
-        else:
-            # TODO: Remove the contiguous in the future.
-            query = query.contiguous().view(query.shape[0], -1)
-            key = key.contiguous().view(key.shape[0], -1)
-            torch_npu._npu_rotary_embedding(
-                positions,
-                query,
-                key,
-                head_size,
-                cos_sin_cache,
-                is_neox_style,
-            )
-    return query.view(query_shape), key.view(key_shape)
-
-
 class AscendRotaryEmbedding(RotaryEmbedding):
     def __init__(
         self,
@@ -244,9 +181,7 @@ class AscendRotaryEmbedding(RotaryEmbedding):
         flash_comm_v1_enabled = get_forward_context().flash_comm_v1_enabled
         if is_draft_model and self.use_mtp and flash_comm_v1_enabled:
             positions = torch.ops.vllm.maybe_all_gather_and_maybe_unpad(positions.contiguous(), True)
-        return torch.ops.vllm.npu_rotary_embedding(
-            positions, query, key, self.cos_sin_cache, self.head_size, self.rotary_dim, is_neox_style
-        )
+        return ir.ops.rotary_embedding(positions, query, key, self.head_size, self.cos_sin_cache, is_neox_style)
 
 
 class AscendYaRNRotaryEmbedding(YaRNScalingRotaryEmbedding):

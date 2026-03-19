@@ -52,10 +52,12 @@ from vllm_ascend.utils import (
 
 if TYPE_CHECKING:
     from vllm.config import ModelConfig, VllmConfig
+    from vllm.config.kernel import IrOpPriorityConfig
     from vllm.utils import FlexibleArgumentParser
 else:
     ModelConfig = None
     VllmConfig = None
+    IrOpPriorityConfig = None
     FlexibleArgumentParser = None
 
 _CUSTOM_OP_REGISTERED = False
@@ -471,6 +473,22 @@ class NPUPlatform(Platform):
             else:
                 os.environ["ASCEND_CUSTOM_OPP_PATH"] = CUSTOM_OPP_PATH
         _CUSTOM_OP_REGISTERED = True
+        import vllm_ascend.kernels  # noqa: F401, registers IR op implementations
+
+    @classmethod
+    def get_default_ir_op_priority(cls, vllm_config: VllmConfig) -> IrOpPriorityConfig:
+        from vllm.config.kernel import IrOpPriorityConfig
+
+        if is_310p():
+            return IrOpPriorityConfig.with_default(
+                ["npu_kernels", "native"],
+                rotary_embedding=["310p_kernels", "native"],
+            )
+
+        return IrOpPriorityConfig.with_default(
+            ["native"],
+            rotary_embedding=["npu_triton", "npu_kernels", "native"],
+        )
 
     @classmethod
     def get_attn_backend_cls(cls, selected_backend, attn_selector_config, num_heads: int | None = None):

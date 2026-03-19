@@ -15,23 +15,6 @@
 # This file is a part of the vllm-ascend project.
 #
 
+from . import npu_ops, triton_ops
 
-import torch
-from vllm import ir
-
-from vllm_ascend.ops.rotary_embedding import AscendRotaryEmbedding
-
-
-class AscendRotaryEmbedding310(AscendRotaryEmbedding):
-    def forward_oot(
-        self,
-        positions: torch.Tensor,
-        query: torch.Tensor,
-        key: torch.Tensor,
-        offsets: torch.Tensor | None = None,
-        is_neox_style_override: bool | None = None,
-    ):
-        is_neox_style = self.is_neox_style
-        if is_neox_style_override is not None:
-            is_neox_style = is_neox_style_override
-        return ir.ops.rotary_embedding(positions, query, key, self.head_size, self.cos_sin_cache, is_neox_style)
+__all__ = ["npu_ops", "triton_ops", "310p_ops"]
