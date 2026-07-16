@@ -99,6 +99,7 @@ def _gumbel_sample_kernel(
     vocab_size,
     BLOCK_SIZE: tl.constexpr,
     APPLY_TEMPERATURE: tl.constexpr,
+    PER_TOKEN_COL: tl.constexpr,
 ):
     token_idx = tl.program_id(0)
     block_idx = tl.program_id(1)
@@ -121,7 +122,10 @@ def _gumbel_sample_kernel(
     if processed_logits_ptr is not None:
         # Store the temperature-applied logits.
         if processed_logits_col_ptr is not None:
-            col = tl.load(processed_logits_col_ptr)
+            if PER_TOKEN_COL:
+                col = tl.load(processed_logits_col_ptr + token_idx)
+            else:
+                col = tl.load(processed_logits_col_ptr)
         else:
             col = 0
         tl.store(
@@ -166,6 +170,12 @@ def gumbel_sample(
 ) -> torch.Tensor:
     if use_fp64:
         raise NotImplementedError("FP64 Gumbel sampling is not supported on NPU.")
+    # DSpark
+    # # Enforce contiguity on non-strided input tensors
+    # expanded_idx_mapping = expanded_idx_mapping.contiguous()
+    # pos = pos.contiguous()
+    # if output_processed_logits_col is not None:
+    #     output_processed_logits_col = output_processed_logits_col.contiguous()
     num_tokens, vocab_size = logits.shape
     BLOCK_SIZE = 1024
     num_blocks = triton.cdiv(vocab_size, BLOCK_SIZE)
@@ -181,6 +191,11 @@ def gumbel_sample(
         dtype=torch.float32,
         device=logits.device,
     )
+    per_token_col = (
+        output_processed_logits_col is not None
+        and output_processed_logits_col.dim() > 0
+    )
+    # 这个算子有大问题
     _gumbel_sample_kernel[(num_tokens, num_blocks)](
         local_argmax,
         local_argmax.stride(0),
@@ -198,6 +213,7 @@ def gumbel_sample(
         vocab_size,
         BLOCK_SIZE=BLOCK_SIZE,
         APPLY_TEMPERATURE=apply_temperature,
+        PER_TOKEN_COL=per_token_col,
     )
     # NOTE(woosuk): Use int64 for later indexing.
     max_block_idx = local_max.argmax(dim=-1, keepdim=True)
