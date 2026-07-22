@@ -32,6 +32,29 @@ from vllm_ascend.worker.v2.input_batch import AscendInputBatch
 class AscendModelState(DefaultModelState):
     """Model state for Ascend NPUs."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Lazy-initialized DSA-specific metadata caches.
+        self._dsa_prefill_cache: dict | None = None
+        self._dsa_decode_cache: dict | None = None
+        self._need_dsa_kwargs = self._detect_dsa_model()
+
+    def _detect_dsa_model(self) -> bool:
+        hf_config = self.vllm_config.model_config.hf_config
+        return getattr(hf_config, "model_type", None) == "deepseek_v4"
+
+    def get_extra_attn_kwargs(self, attn_metadata_builder, num_reqs) -> dict[str, Any]:
+        if not self._need_dsa_kwargs:
+            return {}
+        if self._dsa_prefill_cache is None:
+            self._dsa_prefill_cache = {}
+        if self._dsa_decode_cache is None:
+            self._dsa_decode_cache = {}
+        return {
+            "prefill_ratio_to_sas_metadata": self._dsa_prefill_cache,
+            "decode_ratio_to_sas_metadata": self._dsa_decode_cache,
+        }
+
     def prepare_attn(
         self,
         input_batch: AscendInputBatch,
@@ -72,6 +95,7 @@ class AscendModelState(DefaultModelState):
             seq_lens_np=input_batch.seq_lens_np,
             positions=input_batch.positions,
             attn_state=input_batch.attn_state,
+            model_specific_attn_metadata=self,
             for_cudagraph_capture=for_capture,
         )
         return self.attn_metadata
