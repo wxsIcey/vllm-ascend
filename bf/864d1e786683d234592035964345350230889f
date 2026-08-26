@@ -1,0 +1,78 @@
+vllm_ascend/ops/triton/reject_sample.py
+  s_8e56b69372d1ae::t_81f18dc7ac1ae1 481,487-488
+  s_8e56b69372d1ae::t_d6c7dda2b38ca4 177,183-184,535,551,557,566
+  s_8e56b69372d1ae::t_2928e39984cd44 354-376,378-393,395-403,405
+  s_8e56b69372d1ae::t_3b4db5d4bfdf38 511-519,521-523,525-526,528,530-531,533-534,536-550,552-556,558-565,567-590
+tests/e2e/nightly/single_node/models/configs/MiniMax-M3-BF16-A3.yaml
+  s_8e56b69372d1ae::t_e08af29a61d710 41
+tests/ut/sample/test_rejection_sampler.py
+  s_8e56b69372d1ae::t_230c3ba9152b0c 312
+vllm_ascend/ops/triton/bincount.py
+  s_8e56b69372d1ae::t_8823fe015276ad 74,77,79
+vllm_ascend/_310p/sample/sampler.py
+  s_8e56b69372d1ae::t_c75b455d26a919 158-166
+docs/source/tutorials/models/MiniMax-M3.md
+  s_8e56b69372d1ae::t_1569ca76f3840e 147
+  s_8e56b69372d1ae::t_bdf758856e0787 184
+vllm_ascend/spec_decode/step3p5.py
+  s_8e56b69372d1ae::t_2643efa48b57b4 182,184
+vllm_ascend/model_executor/warmup/rejection_sampler_triton_warmup.py
+  s_8e56b69372d1ae::t_08003ae54884de 115,140
+vllm_ascend/sample/rejection_sampler.py
+  s_8e56b69372d1ae::t_552a30061b6b42 556-558,560-562,564-570,572-582,584-608,610-611,613-633,635-661,663-681,1173
+  s_8e56b69372d1ae::t_22b82194d7f8ad 1332-1337
+  s_8e56b69372d1ae::t_8f5d84acd2d23a 1357-1362
+  s_8e56b69372d1ae::t_51744df5ce8406 1162-1166,1170-1172
+  s_8e56b69372d1ae::t_f0e728a227a61d 972-973,1237-1238
+  s_8e56b69372d1ae::t_e03d45c80d5e0c 89,222,275,325,329,339-340,346,375,388,609,902,974-975,1109,1167-1168,1195,1239,1290,1363-1364
+  s_8e56b69372d1ae::t_14bfb5b343fd9f 389
+  s_8e56b69372d1ae::t_98593aeb308a27 1110
+  s_8e56b69372d1ae::t_7618f323c2e6ba 1174
+  s_8e56b69372d1ae::t_91e6f8521ba20d 1240
+  s_8e56b69372d1ae::t_4e81240dd5db94 1291
+  s_8e56b69372d1ae::t_bf6beed4d9ece7 1338-1339
+vllm_ascend/sample/sampler.py
+  s_8e56b69372d1ae::t_7bf70c5f7e09c7 118,121-122,124-127,129-131,133-134,136-139,141-144,146,154
+  s_8e56b69372d1ae::t_3ebdd8cbb3ef12 102-107,109-110
+  s_8e56b69372d1ae::t_a8603c565728a1 83,119
+vllm_ascend/ops/vocab_parallel_embedding.py
+  s_8e56b69372d1ae::t_8a6af2af665ff7 336
+  s_8e56b69372d1ae::t_4c5b049d6b4385 394,398
+  s_8e56b69372d1ae::t_5f94ada88d9f34 379,383
+tests/e2e/nightly/single_node/models/configs/MiniMax-M3-W8A8-A3.yaml
+  s_8e56b69372d1ae::t_4b62a78591efc2 56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "bf864d1e786683d234592035964345350230889f",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_8e56b69372d1ae": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a8e5c823f99c63105d5002e",
+        "model": "DeepSeek-V4-Pro-Official"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "dedupe_key": "6a8e5c823f99c63105d5002e:6a8ea2663f99c63105d503eb:afterEdit:004157be",
+        "session_id": "6a8e5c823f99c63105d5002e",
+        "tool_use_id": "6a8ea2663f99c63105d503eb",
+        "client_type": "ide",
+        "edit_kind": "file_edit",
+        "source_scene": "agent",
+        "runtime_client": "trae-tob-git-ai",
+        "external_session_id": "6a8e5c823f99c63105d5002e",
+        "tool_type": "builtin",
+        "tool_id": "icube:applyChatSnapshotPatch",
+        "operation_id": "6a8ea2663f99c63105d503eb"
+      }
+    }
+  }
+}
