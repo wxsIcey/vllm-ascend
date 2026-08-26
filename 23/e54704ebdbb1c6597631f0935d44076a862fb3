@@ -1,0 +1,84 @@
+docs/source/tutorials/models/MiniMax-M3.md
+  s_8e56b69372d1ae::t_1569ca76f3840e 147
+  s_8e56b69372d1ae::t_bdf758856e0787 184
+docs/source/locale/zh_CN/LC_MESSAGES/user_guide/release_notes.po
+  s_8e56b69372d1ae::t_ace247c211af2b 814
+  s_8e56b69372d1ae::t_9f437780ec9dc8 820
+  s_8e56b69372d1ae::t_d51d853ca3e55b 620
+  s_8e56b69372d1ae::t_e903093cd3fb12 624
+tests/e2e/nightly/single_node/models/configs/MiniMax-M3-W8A8-A3.yaml
+  s_8e56b69372d1ae::t_4b62a78591efc2 56
+tests/e2e/nightly/single_node/models/configs/MiniMax-M3-BF16-A3.yaml
+  s_8e56b69372d1ae::t_e08af29a61d710 41
+vllm_ascend/spec_decode/step3p5.py
+  s_8e56b69372d1ae::t_2643efa48b57b4 182,184
+vllm_ascend/ops/triton/reject_sample.py
+  s_8e56b69372d1ae::t_d6c7dda2b38ca4 177,183-184,535,551,557,566
+  s_8e56b69372d1ae::t_81f18dc7ac1ae1 481,487-488
+  s_8e56b69372d1ae::t_2928e39984cd44 354-376,378-393,395-403,405
+  s_8e56b69372d1ae::t_3b4db5d4bfdf38 511-519,521-523,525-526,528,530-531,533-534,536-550,552-556,558-565,567-590
+vllm_ascend/ops/vocab_parallel_embedding.py
+  s_8e56b69372d1ae::t_8a6af2af665ff7 336
+  s_8e56b69372d1ae::t_5f94ada88d9f34 379,383
+  s_8e56b69372d1ae::t_4c5b049d6b4385 394,398
+vllm_ascend/sample/rejection_sampler.py
+  s_8e56b69372d1ae::t_f0e728a227a61d 972-974
+  s_8e56b69372d1ae::t_39650a681af822 1109
+  s_8e56b69372d1ae::t_8631054d70ef07 1237-1239
+  s_8e56b69372d1ae::t_e03d45c80d5e0c 89,222,275,325,329,340,346,375,389,406,453,497,510,611,633,661,681,902,975,1110,1168,1174,1187,1195,1240,1291,1339,1364,1366
+  s_8e56b69372d1ae::t_552a30061b6b42 556-558,560-562,564-570,572-582,584-610,613-632,635-660,663-680
+  s_8e56b69372d1ae::t_8f5d84acd2d23a 1357-1363
+  s_8e56b69372d1ae::t_51744df5ce8406 1159-1160,1162-1167,1170-1173,1186
+  s_8e56b69372d1ae::t_5e1f39d2cb15ca 388
+  s_8e56b69372d1ae::t_22b82194d7f8ad 1332-1338
+  s_8e56b69372d1ae::t_f1774411d14dfc 1290
+  s_8e56b69372d1ae::t_5408fb650ae85e 339
+vllm_ascend/spec_decode/llm_base_proposer.py
+  s_8e56b69372d1ae::t_771a5602ea8ef2 1402-1406
+vllm_ascend/ops/triton/bincount.py
+  s_8e56b69372d1ae::t_8823fe015276ad 74,77,79
+vllm_ascend/sample/sampler.py
+  s_8e56b69372d1ae::t_a8603c565728a1 83,119
+  s_8e56b69372d1ae::t_3ebdd8cbb3ef12 102-107,109-110
+  s_8e56b69372d1ae::t_7bf70c5f7e09c7 118,121-122,124-127,129-131,133-134,136-139,141-144,146,154
+vllm_ascend/model_executor/warmup/rejection_sampler_triton_warmup.py
+  s_8e56b69372d1ae::t_08003ae54884de 115,140
+tests/ut/sample/test_rejection_sampler.py
+  s_8e56b69372d1ae::t_230c3ba9152b0c 312
+vllm_ascend/_310p/sample/sampler.py
+  s_8e56b69372d1ae::t_c75b455d26a919 158-166
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "23e54704ebdbb1c6597631f0935d44076a862fb3",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_8e56b69372d1ae": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a8e5c823f99c63105d5002e",
+        "model": "DeepSeek-V4-Pro-Official"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "dedupe_key": "6a8e5c823f99c63105d5002e:6a8ea2663f99c63105d503eb:afterEdit:004157be",
+        "tool_type": "builtin",
+        "external_session_id": "6a8e5c823f99c63105d5002e",
+        "operation_id": "6a8ea2663f99c63105d503eb",
+        "edit_kind": "file_edit",
+        "source_scene": "agent",
+        "runtime_client": "trae-tob-git-ai",
+        "session_id": "6a8e5c823f99c63105d5002e",
+        "tool_id": "icube:applyChatSnapshotPatch",
+        "client_type": "ide",
+        "tool_use_id": "6a8ea2663f99c63105d503eb"
+      }
+    }
+  }
+}
