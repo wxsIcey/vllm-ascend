@@ -1,0 +1,32 @@
+vllm_ascend/ops/vocab_parallel_embedding.py
+  h_1b05b5b5cd3301 363,368,392
+  s_b22b02fefc0858::t_f7bcd4ba86cce8 395-396
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "87bcaa186c714e424dafebaff49d3fdc985d7157",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_b22b02fefc0858": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-f5d979d0-1daa-4859-84f5-8298e7df5e4f",
+        "model": "default"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "client_type": "ide",
+        "edit_kind": "file_edit",
+        "tool": "trae-cue",
+        "external_session_id": "icr-f5d979d0-1daa-4859-84f5-8298e7df5e4f",
+        "source_scene": "cue"
+      }
+    }
+  }
+}
