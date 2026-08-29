@@ -1,0 +1,14 @@
+vllm_ascend/ascend_config.py
+  h_1b05b5b5cd3301 631-640
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "a9ddc03b6155abcf6d4b8261942669062d05f581",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  }
+}
