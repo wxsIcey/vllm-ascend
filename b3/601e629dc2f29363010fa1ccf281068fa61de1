@@ -1,0 +1,32 @@
+vllm_ascend/models/minimax_m3/minimax_m3.py
+  s_779ae82cafb6b4::t_f6f46480a593a4 1207-1211
+  s_779ae82cafb6b4::t_20d73bfe21b128 1212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "b3601e629dc2f29363010fa1ccf281068fa61de1",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_779ae82cafb6b4": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-657d9852-5708-4ac2-90b0-f758cdb05bb1",
+        "model": "default"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "tool": "trae-cue",
+        "external_session_id": "icr-657d9852-5708-4ac2-90b0-f758cdb05bb1",
+        "source_scene": "cue",
+        "edit_kind": "file_edit",
+        "client_type": "ide"
+      }
+    }
+  }
+}
