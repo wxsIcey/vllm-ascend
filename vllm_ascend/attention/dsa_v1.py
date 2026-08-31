@@ -357,6 +357,13 @@ class AscendDSAMetadataBuilder(AttentionMetadataBuilder[AscendDSAMetadata]):
         self.speculative_config = vllm_config.speculative_config
         self.decode_threshold = 1
         self.spec_slot_mapping = None
+        # Address-stable static buffer for DSpark SWA visible-slot indices
+        # (allocated below only for speculative decoding). ACL graph capture
+        # freezes tensor addresses, and build_dspark_swa_indices returns a
+        # fresh tensor per step, so its data_ptr differs between capture and
+        # replay and the replayed kernel reads a stale/dangling address
+        # (NPU MTE out-of-range). Mirror the sas_metadata static-buffer pattern.
+        self.dspark_swa_indices_buffer: torch.Tensor | None = None
         if get_ascend_device_type() in {AscendDeviceType.A5}:
             self.slot_mapping_shape = (vllm_config.scheduler_config.max_num_batched_tokens,)  # type: ignore
         else:
@@ -375,6 +382,21 @@ class AscendDSAMetadataBuilder(AttentionMetadataBuilder[AscendDSAMetadata]):
                 )
                 for _ in range(spec_token_num)
             ]
+            # Shared static buffer for dspark_swa_indices, so its address
+            # stays stable across async ACL-graph replays.
+            _dspark_index_width = _aligned_dspark_index_width(
+                self.model_config.hf_config.sliding_window, spec_token_num
+            )
+            max_dspark_rows = max(
+                scheduler_config.max_num_batched_tokens,
+                scheduler_config.max_num_seqs * (self.speculative_config.num_speculative_tokens + 1),
+            )
+            self.dspark_swa_indices_buffer = torch.zeros(
+                (max_dspark_rows, 1, _dspark_index_width),
+                dtype=torch.int32,
+                device=self.device,
+            )
+
             self.decode_threshold += spec_token_num
             assert self.decode_threshold <= 16, (
                 f"decode_threshold exceeded \
@@ -432,6 +454,25 @@ class AscendDSAMetadataBuilder(AttentionMetadataBuilder[AscendDSAMetadata]):
                 torch.bfloat16
             ),
         )
+
+    def _store_dspark_swa_indices(self, indices: torch.Tensor) -> torch.Tensor:
+        """Store DSpark SWA visible-slot indices into an address-stable buffer.
+
+        ACL graph capture freezes tensor addresses, so a freshly allocated
+        ``build_dspark_swa_indices`` result has a different ``data_ptr`` at
+        replay than at capture and the replayed kernel reads a stale address.
+        Copying into a static buffer (like ``sas_metadata``) keeps the address
+        identical across capture/replay.
+        """
+        if self.dspark_swa_indices_buffer is None:
+            return indices
+        num_rows = indices.shape[0]
+        assert num_rows <= self.dspark_swa_indices_buffer.shape[0], (
+            f"dspark_swa_indices needs {num_rows} rows but the static buffer "
+            f"only has {self.dspark_swa_indices_buffer.shape[0]}"
+        )
+        self.dspark_swa_indices_buffer[:num_rows].copy_(indices)
+        return self.dspark_swa_indices_buffer[:num_rows]
 
     @classmethod
     def get_cudagraph_support(
@@ -729,7 +770,7 @@ class AscendDSAMetadataBuilder(AttentionMetadataBuilder[AscendDSAMetadata]):
                 self.seq_lens[: self.num_decodes],
                 self.num_decode_tokens,
             )
-            dspark_swa_indices = dspark_swa_indices[: self.num_decode_tokens]
+            dspark_swa_indices = self._store_dspark_swa_indices(dspark_swa_indices[: self.num_decode_tokens])
             ori_win_left, ori_win_right = get_dspark_sparse_sas_window(self.vllm_config)
         if not has_prefill and self.common_ratio_to_sas_metadata.get(layer_name) is None:
             cu_seqlens_ori_kv = DeviceOperator.get_dsa_decode_cu_seqlens_ori_kv(
@@ -877,7 +918,7 @@ class AscendDSAMetadataBuilder(AttentionMetadataBuilder[AscendDSAMetadata]):
                 seq_lens,
                 self.num_actual_tokens,
             )
-            dspark_swa_indices = dspark_swa_indices[: self.num_actual_tokens]
+            dspark_swa_indices = self._store_dspark_swa_indices(dspark_swa_indices[: self.num_actual_tokens])
             ori_win_left, ori_win_right = get_dspark_sparse_sas_window(self.vllm_config)
 
         cu_seqlens_ori_kv = (
