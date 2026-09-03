@@ -1,0 +1,45 @@
+tests/ut/test_mrv2_utils.py
+  s_b7fec14909d48f::t_930cb00f8f3978 45-49,56
+  s_b7fec14909d48f::t_21fe5c7e07a7b3 123-128
+  s_b7fec14909d48f::t_2a05022c9be775 44,50,55
+  s_b7fec14909d48f::t_1e324223bd94c3 129-167
+vllm_ascend/mrv2_utils.py
+  s_b7fec14909d48f::t_ce7473b84b056a 107-124,141-146
+  s_b7fec14909d48f::t_217094d95167f6 183-184
+  s_b7fec14909d48f::t_3ceece53eef1bc 63-68
+  s_b7fec14909d48f::t_dc76fdbb60ec0b 138-140,147
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "733a5f94c2cd03caa1845239c9f12bd2b634e977",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_b7fec14909d48f": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a98e27577acdc49ede7852d",
+        "model": "glm-5.3__dev"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "client_type": "ide",
+        "tool_id": "Edit",
+        "operation_id": "6a995bf677acdc49ede787e9",
+        "runtime_client": "trae-tob-git-ai",
+        "external_session_id": "6a98e27577acdc49ede7852d",
+        "tool_use_id": "6a995bf677acdc49ede787e9",
+        "edit_kind": "file_edit",
+        "source_scene": "unknown",
+        "tool_type": "agent",
+        "dedupe_key": "6a98e27577acdc49ede7852d:6a995bf677acdc49ede787e9:afterEdit:aed914b9",
+        "session_id": "6a98e27577acdc49ede7852d"
+      }
+    }
+  }
+}
