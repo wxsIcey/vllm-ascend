@@ -1,0 +1,43 @@
+tests/e2e/pull_request/one_card/test_attention_v1_precision.py
+  s_b7fec14909d48f::t_6274a8db33e2fd 24-30
+vllm_ascend/mrv2_utils.py
+  s_b7fec14909d48f::t_9c29b51fbd7cde 151-153
+  s_b7fec14909d48f::t_c29f144be12e35 93-104,107-117,137
+tests/ut/test_mrv2_utils.py
+  s_b7fec14909d48f::t_14fcd9197b12af 92-114
+  s_b7fec14909d48f::t_073ab3e133e02d 44,48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "8c2197930028f111e859500f957875af4540164e",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_b7fec14909d48f": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a98e27577acdc49ede7852d",
+        "model": "glm-5.3__dev"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "dedupe_key": "6a98e27577acdc49ede7852d:6a99296c77acdc49ede786d8:afterEdit:aed914b9",
+        "tool_id": "Edit",
+        "edit_kind": "file_edit",
+        "external_session_id": "6a98e27577acdc49ede7852d",
+        "operation_id": "6a99296c77acdc49ede786d8",
+        "tool_type": "agent",
+        "source_scene": "unknown",
+        "session_id": "6a98e27577acdc49ede7852d",
+        "tool_use_id": "6a99296c77acdc49ede786d8",
+        "runtime_client": "trae-tob-git-ai",
+        "client_type": "ide"
+      }
+    }
+  }
+}
