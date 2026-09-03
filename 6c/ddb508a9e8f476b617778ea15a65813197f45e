@@ -1,0 +1,32 @@
+vllm_ascend/mrv2_utils.py
+  s_b7fec14909d48f::t_eb4a4bc904a900 114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "6cddb508a9e8f476b617778ea15a65813197f45e",
+  "prompts": {},
+  "sessions": {
+    "s_b7fec14909d48f": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a98e27577acdc49ede7852d",
+        "model": "glm-5.3__dev"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "runtime_client": "trae-tob-git-ai",
+        "client_type": "ide",
+        "dedupe_key": "6a98e27577acdc49ede7852d:6a98e56777acdc49ede785ae:afterEdit:0ef8c786",
+        "operation_id": "6a98e56777acdc49ede785ae",
+        "tool_use_id": "6a98e56777acdc49ede785ae",
+        "session_id": "6a98e27577acdc49ede7852d",
+        "edit_kind": "file_edit",
+        "tool_type": "agent",
+        "external_session_id": "6a98e27577acdc49ede7852d",
+        "tool_id": "Edit",
+        "source_scene": "unknown"
+      }
+    }
+  }
+}
