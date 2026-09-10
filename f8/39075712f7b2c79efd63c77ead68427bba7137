@@ -1,0 +1,80 @@
+vllm_ascend/mrv2_utils.py
+  s_b7fec14909d48f::t_ce7473b84b056a 107-124,141-146,189,193
+  s_b7fec14909d48f::t_dc76fdbb60ec0b 138-140,147,204
+  s_b7fec14909d48f::t_217094d95167f6 183-184
+  s_b7fec14909d48f::t_3ceece53eef1bc 63-68
+  s_b7fec14909d48f::t_a3162068a665bb 190-192
+  s_b7fec14909d48f::t_f071a480b1da99 201-203
+tests/ut/test_mrv2_utils.py
+  s_b7fec14909d48f::t_930cb00f8f3978 45-49,56
+  s_b7fec14909d48f::t_21fe5c7e07a7b3 123-128
+  s_b7fec14909d48f::t_2a05022c9be775 44,50,55
+  s_b7fec14909d48f::t_1e324223bd94c3 129-167
+vllm_ascend/__init__.py
+  s_c041d248882b6c::t_9f911b660273c2 65
+  s_cfd4e535a6f0e8::t_0326688415000b 62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "f839075712f7b2c79efd63c77ead68427bba7137",
+  "prompts": {},
+  "humans": {
+    "h_1b05b5b5cd3301": {
+      "author": "zouzy <zouzongyu@huawei.com>"
+    }
+  },
+  "sessions": {
+    "s_b7fec14909d48f": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a98e27577acdc49ede7852d",
+        "model": "glm-5.3__dev"
+      },
+      "human_author": "zouzy <zouzongyu@huawei.com>",
+      "custom_attributes": {
+        "dedupe_key": "6a98e27577acdc49ede7852d:6a995bf677acdc49ede787e9:afterEdit:aed914b9",
+        "operation_id": "6a995bf677acdc49ede787e9",
+        "source_scene": "unknown",
+        "tool_use_id": "6a995bf677acdc49ede787e9",
+        "edit_kind": "file_edit",
+        "tool_id": "Edit",
+        "session_id": "6a98e27577acdc49ede7852d",
+        "external_session_id": "6a98e27577acdc49ede7852d",
+        "runtime_client": "trae-tob-git-ai",
+        "tool_type": "agent",
+        "client_type": "ide"
+      }
+    },
+    "s_c041d248882b6c": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-436c61bd-fc2b-4efd-8f50-85a7ab0c8cee",
+        "model": "default"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "client_type": "ide",
+        "source_scene": "cue",
+        "external_session_id": "icr-436c61bd-fc2b-4efd-8f50-85a7ab0c8cee",
+        "edit_kind": "file_edit",
+        "tool": "trae-cue"
+      }
+    },
+    "s_cfd4e535a6f0e8": {
+      "agent_id": {
+        "tool": "trae-cue",
+        "id": "ai_tab-icr-b4a0221c-5174-4405-af0c-cbace2f52401",
+        "model": "default"
+      },
+      "human_author": null,
+      "custom_attributes": {
+        "external_session_id": "icr-b4a0221c-5174-4405-af0c-cbace2f52401",
+        "source_scene": "cue",
+        "tool": "trae-cue",
+        "client_type": "ide",
+        "edit_kind": "file_edit"
+      }
+    }
+  }
+}
